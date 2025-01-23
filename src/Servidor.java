@@ -3,36 +3,55 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+/**
+ * Clase Servidor que simula un servidor UDP para recibir y responder mensajes
+ * de un cliente. El servidor responde a ciertas preguntas con respuestas predefinidas
+ * hasta que se recibe un mensaje específico, tras lo cual continuará escuchando
+ * y respondiendo mensajes.
+ *
+ * El servidor utiliza un socket UDP para la comunicación.
+ */
 public class Servidor {
+
+    /**
+     * Metodo principal que inicia el servidor y permite recibir y responder
+     * mensajes a través de UDP.
+     *
+     * El servidor permanece en un bucle infinito, esperando recibir mensajes
+     * de cualquier cliente, procesando esos mensajes y respondiendo con mensajes
+     * predefinidos.
+     *
+     * @param args Argumentos de la línea de comandos (no utilizados en este caso).
+     */
     public static void main(String[] args) {
-        int puerto = 5000;
+        int puerto = 5000; // Puerto en el que el servidor escucha
         byte[] buffer = new byte[2048];  // Buffer para recibir datos
 
         try {
             // Servidor
             System.out.println("Iniciado el servidor UDP");
-            DatagramSocket socketUDP = new DatagramSocket(puerto);
+            DatagramSocket socketUDP = new DatagramSocket(puerto); // Se crea el socket UDP en el puerto especificado
 
             while (true) {
-                // Creo un paquete de información
+                // Creo un paquete de información para recibir los datos
                 DatagramPacket peticion = new DatagramPacket(buffer, buffer.length);
 
-                // No sabemos quien nos contacta
+                // El servidor recibe el mensaje
                 socketUDP.receive(peticion);
                 System.out.println("RECIBO LA INFORMACION DEL CLIENTE");
 
-                // A partir del mensaje, convertimos a String solo con los datos recibidos
+                // Convertimos los datos del paquete a un String
                 String mensaje = new String(peticion.getData(), 0, peticion.getLength());
 
-                // En el mensaje me viene el puerto
+                // Obtenemos el puerto y la dirección del cliente
                 int puertoCliente = peticion.getPort();
-                // Conseguimos la dirección
                 InetAddress direccion = peticion.getAddress();
 
-                // Verificamos si el mensaje recibido es uno de los conocidos
+                // Se verifica el mensaje recibido y se genera la respuesta
                 String respuestaMensaje;
                 byte[] respuestaBuffer;
 
+                // Se asignan las respuestas correspondientes a ciertos mensajes predefinidos
                 if (mensaje.equalsIgnoreCase("¿Quien es?")) {
                     respuestaMensaje = "Soy yo";
                 } else if (mensaje.equalsIgnoreCase("¿Que vienes a buscar?")) {
@@ -45,17 +64,17 @@ public class Servidor {
                     respuestaMensaje = "Error";
                 }
 
-                // Convertir la respuesta a bytes
+                // Convertimos la respuesta a bytes
                 respuestaBuffer = respuestaMensaje.getBytes();
 
-                // Respuesta del servidor al cliente
-                System.out.println("ENVIO LA INFORMACION DEL CLIENTE: " + respuestaMensaje);
+                // Enviamos la respuesta al cliente
+                System.out.println("ENVIO LA INFORMACION AL CLIENTE: " + respuestaMensaje);
                 DatagramPacket respuesta = new DatagramPacket(respuestaBuffer, respuestaBuffer.length, direccion, puertoCliente);
                 socketUDP.send(respuesta);
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e); // Manejo de excepciones de entrada/salida
         }
     }
 }
